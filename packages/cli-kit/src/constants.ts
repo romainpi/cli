@@ -27,6 +27,8 @@ const constants = {
     noAnalytics: 'SHOPIFY_CLI_NO_ANALYTICS',
     alwaysLogAnalytics: 'SHOPIFY_CLI_ALWAYS_LOG_ANALYTICS',
     firstPartyDev: 'SHOPIFY_CLI_1P_DEV',
+    enableCliRedirect: 'SHOPIFY_ENABLE_CLI_REDIRECT',
+    skipCliRedirect: 'SHOPIFY_SKIP_CLI_REDIRECT',
   },
   paths: {
     executables: {
