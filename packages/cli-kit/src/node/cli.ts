@@ -2,6 +2,7 @@
 import {findUpAndReadPackageJson} from './node-package-manager.js'
 import {errorHandler} from './error-handler.js'
 import {isDevelopment} from '../environment/local.js'
+import {isTruthy} from '../environment/utilities.js'
 import constants, {bugsnagApiKey} from '../constants.js'
 import {join, moduleDirectory} from '../path.js'
 import {captureOutput, exec} from '../system.js'
@@ -55,8 +56,8 @@ export async function runCreateCLI(options: RunCLIOptions) {
 
 export async function replaceGlobalCLIWithLocal(filepath: string): Promise<boolean> {
   // Temporary flag while we test out this feature and ensure it won't break anything!
-  if (!process.env.SHOPIFY_ENABLE_CLI_REDIRECT) return false
-  if (process.env.SHOPIFY_SKIP_CLI_REDIRECT) return false
+  if (!isTruthy(process.env.SHOPIFY_ENABLE_CLI_REDIRECT)) return false
+  if (isTruthy(process.env.SHOPIFY_SKIP_CLI_REDIRECT)) return false
   if (process.env.npm_config_user_agent) return false
 
   const cliPackage = await localCliPackage()
