@@ -106,9 +106,9 @@ async function uiExtensionInit({
         },
       },
       {
-        title: `Scaffold ${getExtensionOutputConfig(extensionType).humanKey} extension`,
+        title: `Generate ${getExtensionOutputConfig(extensionType).humanKey} extension`,
         task: async (_, task) => {
-          task.title = `Scaffolding ${getExtensionOutputConfig(extensionType).humanKey} extension...`
+          task.title = `Generating ${getExtensionOutputConfig(extensionType).humanKey} extension...`
           const input = yaml.encode({
             extensions: [
               {
@@ -141,7 +141,7 @@ async function uiExtensionInit({
             }),
             input,
           })
-          task.title = `${getExtensionOutputConfig(extensionType).humanKey} extension scaffolded`
+          task.title = `${getExtensionOutputConfig(extensionType).humanKey} extension generated`
         },
       },
     ],
@@ -176,7 +176,7 @@ async function functionExtensionInit(options: FunctionExtensionInitOptions) {
     const templateDownloadDir = path.join(tmpDir, 'download')
 
     await ui.task({
-      title: `Scaffolding ${getExtensionOutputConfig(options.extensionType).humanKey} extension...`,
+      title: `Generating ${getExtensionOutputConfig(options.extensionType).humanKey} extension...`,
       task: async () => {
         await file.mkdir(templateDownloadDir)
         await git.downloadRepository({
@@ -191,7 +191,7 @@ async function functionExtensionInit(options: FunctionExtensionInitOptions) {
           await file.remove(configYamlPath)
         }
         return {
-          successMessage: `${getExtensionOutputConfig(options.extensionType).humanKey} extension scaffolded`,
+          successMessage: `${getExtensionOutputConfig(options.extensionType).humanKey} extension generated`,
         }
       },
     })
