@@ -1,0 +1,10 @@
+ci:
+  require: []
+
+dependencies:
+  override:
+    - yarn install
+
+deploy:
+  override:
+    - NX_VERBOSE_LOGGING=true npm_config_loglevel=verbose yarn --cwd packages/app run prepack
