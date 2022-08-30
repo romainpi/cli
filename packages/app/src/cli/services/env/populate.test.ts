@@ -64,7 +64,7 @@ describe('env populate', () => {
 
       // When
       const filePath = path.resolve(tmpDir, '.env')
-      const result = await populateEnv(app, {noUpdate: false, envFile: filePath})
+      const result = await populateEnv(app, {envFile: filePath})
 
       // Then
       expect(file.write).toHaveBeenCalledWith(
@@ -119,7 +119,7 @@ describe('env populate', () => {
       vi.spyOn(file, 'write')
 
       // When
-      const result = await populateEnv(app, {noUpdate: false, envFile: filePath})
+      const result = await populateEnv(app, {envFile: filePath})
 
       // Then
       expect(file.write).toHaveBeenCalledWith(
@@ -181,7 +181,7 @@ describe('env populate', () => {
 
       vi.spyOn(file, 'write')
       // When
-      const result = await populateEnv(app, {noUpdate: false, envFile: filePath})
+      const result = await populateEnv(app, {envFile: filePath})
 
       // Then
       expect(file.write).not.toHaveBeenCalled()
