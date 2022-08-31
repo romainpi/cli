@@ -14,7 +14,7 @@ import {
 import generateExtensionPrompt from '../../../prompts/generate/extension.js'
 import {AppInterface} from '../../../models/app/app.js'
 import {load as loadApp} from '../../../models/app/loader.js'
-import generateExtensionService from '../../../services/scaffold/extension.js'
+import generateExtensionService from '../../../services/generate/extension.js'
 import {getUIExtensionTemplates} from '../../../utilities/extensions/template-configuration.js'
 import {
   mapExternalExtensionTypeToExtensionType,
