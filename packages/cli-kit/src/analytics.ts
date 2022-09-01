@@ -89,7 +89,7 @@ const buildPayload = async ({config, errorMessage}: ReportEventOptions) => {
       total_time: currentTime - startTime,
       success: errorMessage === undefined,
       cli_version: await constants.versions.cliKit(),
-      ruby_version: (await rubyVersion()) || '',
+      ruby_version: (await rubyVersion()) ?? '',
       node_version: process.version.replace('v', ''),
       is_employee: await environment.local.isShopify(),
       ...environmentData,
@@ -98,7 +98,7 @@ const buildPayload = async ({config, errorMessage}: ReportEventOptions) => {
     },
     sensitive: {
       args: startArgs.join(' '),
-      error_message: errorMessage,
+      error_message: errorMessage!,
       metadata: JSON.stringify({
         ...sensitiveMetadata,
         extraPublic: {
@@ -124,10 +124,10 @@ export function getEnvironmentData(config: Interfaces.Config) {
   return {
     uname: `${platform} ${arch}`,
     env_ci: ciPlatform.isCI,
-    env_ci_platform: ciPlatform.name,
+    env_ci_platform: ciPlatform.name ?? '',
     env_plugin_installed_any_custom: pluginNames.length !== shopifyPlugins.length,
     env_plugin_installed_shopify: JSON.stringify(shopifyPlugins),
     env_shell: config.shell,
-    env_web_ide: environment.local.webIDEPlatform(),
+    env_web_ide: environment.local.webIDEPlatform() ?? '',
   }
 }

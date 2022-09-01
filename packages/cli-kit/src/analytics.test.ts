@@ -95,6 +95,7 @@ describe('event tracking', () => {
         is_employee: false,
         env_plugin_installed_any_custom: true,
         env_plugin_installed_shopify: JSON.stringify(['@shopify/built-in']),
+        env_package_manager_workspaces: false,
       }
       const expectedPayloadSensitive = {
         args: args.join(' '),

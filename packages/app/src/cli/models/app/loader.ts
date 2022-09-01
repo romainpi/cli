@@ -14,7 +14,13 @@ import {mapUIExternalExtensionTypeToUIExtensionType} from '../../utilities/exten
 import metadata from '../../metadata.js'
 import {error, file, id, path, schema, string, toml, output} from '@shopify/cli-kit'
 import {readAndParseDotEnv, DotEnvFile} from '@shopify/cli-kit/node/dot-env'
-import {getDependencies, getPackageManager, getPackageName} from '@shopify/cli-kit/node/node-package-manager'
+import {
+  getDependencies,
+  getPackageManager,
+  getPackageName,
+  pnpmWorkspaceFile,
+  usesWorkspaces as appUsesWorkspaces,
+} from '@shopify/cli-kit/node/node-package-manager'
 
 export type AppLoaderMode = 'strict' | 'report'
 
@@ -81,6 +87,8 @@ class AppLoader {
     const nodeDependencies = await getDependencies(packageJSONPath)
     const packageManager = await getPackageManager(this.appDirectory)
     const {webs, usedCustomLayout: usedCustomLayoutForWeb} = await this.loadWebs()
+    const pnpmWorkspacesPath = path.join(this.appDirectory, pnpmWorkspaceFile)
+    const usesWorkspaces = await appUsesWorkspaces(packageJSONPath, pnpmWorkspacesPath)
 
     const appClass = new App(
       name,
@@ -94,6 +102,7 @@ class AppLoader {
       uiExtensions,
       themeExtensions,
       functions,
+      usesWorkspaces,
       dotenv,
     )
 
@@ -430,6 +439,7 @@ async function logMetadataForLoadedApp(
       app_web_custom_layout: loadingStrategy.usedCustomLayoutForWeb,
       app_web_frontend_any: webFrontendCount > 0,
       app_web_frontend_count: webFrontendCount,
+      env_package_manager_workspaces: app.usesWorkspaces,
     }
   })
 }
