@@ -124,10 +124,10 @@ export function getEnvironmentData(config: Interfaces.Config) {
   return {
     uname: `${platform} ${arch}`,
     env_ci: ciPlatform.isCI,
-    env_ci_platform: ciPlatform.name ?? '',
+    env_ci_platform: ciPlatform.name,
     env_plugin_installed_any_custom: pluginNames.length !== shopifyPlugins.length,
     env_plugin_installed_shopify: JSON.stringify(shopifyPlugins),
     env_shell: config.shell,
-    env_web_ide: environment.local.webIDEPlatform() ?? '',
+    env_web_ide: environment.local.webIDEPlatform(),
   }
 }
