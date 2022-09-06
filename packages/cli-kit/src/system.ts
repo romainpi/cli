@@ -2,7 +2,6 @@ import {concurrent as concurrentOutput, shouldDisplayColors, debug} from './outp
 import {platformAndArch} from './os.js'
 import {Abort} from './error.js'
 import {execa, ExecaChildProcess} from 'execa'
-import {AbortSignal} from 'abort-controller'
 import type {Writable, Readable} from 'node:stream'
 
 export interface ExecOptions {

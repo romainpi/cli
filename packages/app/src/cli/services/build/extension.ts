@@ -1,8 +1,7 @@
-import {runGoExtensionsCLI} from '../../utilities/extensions/cli.js'
 import {AppInterface} from '../../models/app/app.js'
 import {UIExtension, FunctionExtension, ThemeExtension} from '../../models/app/extensions.js'
-import {extensionConfig} from '../../utilities/extensions/configuration.js'
-import {error, system, yaml, output} from '@shopify/cli-kit'
+import {bundleExtensions} from '../extensions/bundle.js'
+import {error, system} from '@shopify/cli-kit'
 import {execThemeCheckCLI} from '@shopify/cli-kit/node/ruby'
 
 import {Writable} from 'node:stream'
@@ -20,7 +19,7 @@ export interface ExtensionBuildOptions {
   /**
    * Signal to abort the build process.
    */
-  signal: error.AbortSignal
+  signal: AbortSignal
 
   /**
    * Overrides the default build directory.
@@ -72,18 +71,7 @@ export async function buildUIExtensions(options: UiExtensionBuildOptions): Promi
     return
   }
   options.stdout.write(`Building UI extensions...`)
-  const fullOptions = {...options, extensions: options.extensions, includeResourceURL: false}
-  const configuration = await extensionConfig(fullOptions)
-  output.debug(output.content`Dev'ing extension with configuration:
-${output.token.json(configuration)}
-`)
-  const input = yaml.encode(configuration)
-  await runGoExtensionsCLI(['build', '-'], {
-    cwd: options.app.directory,
-    stdout: options.stdout,
-    stderr: options.stderr,
-    input,
-  })
+  await bundleExtensions(options)
 }
 
 export interface BuildFunctionExtensionOptions extends ExtensionBuildOptions {}

@@ -132,7 +132,7 @@ async function dev(options: DevOptions) {
     if (options.noTunnel) {
       const devFrontendProccess = {
         prefix: devFrontend.logPrefix,
-        action: async (stdout: Writable, stderr: Writable, signal: error.AbortSignal) => {
+        action: async (stdout: Writable, stderr: Writable, signal: AbortSignal) => {
           await devFrontend.action(stdout, stderr, signal, frontendPort)
         },
       }
@@ -170,7 +170,7 @@ function devFrontendTarget(options: DevFrontendTargetOptions): ReverseHTTPProxyT
 
   return {
     logPrefix: options.web.configuration.type,
-    action: async (stdout: Writable, stderr: Writable, signal: error.AbortSignal, port: number) => {
+    action: async (stdout: Writable, stderr: Writable, signal: AbortSignal, port: number) => {
       await system.exec(cmd!, args, {
         cwd: options.web.directory,
         stdout,
@@ -208,7 +208,7 @@ function devBackendTarget(web: Web, options: DevWebOptions): output.OutputProces
 
   return {
     prefix: web.configuration.type,
-    action: async (stdout: Writable, stderr: Writable, signal: error.AbortSignal) => {
+    action: async (stdout: Writable, stderr: Writable, signal: AbortSignal) => {
       await system.exec(cmd!, args, {
         cwd: web.directory,
         stdout,
@@ -235,7 +235,7 @@ async function devExtensionsTarget(
   return {
     logPrefix: 'extensions',
     pathPrefix: '/extensions',
-    action: async (stdout: Writable, stderr: Writable, signal: error.AbortSignal, port: number) => {
+    action: async (stdout: Writable, stderr: Writable, signal: AbortSignal, port: number) => {
       await devExtensions({
         app,
         extensions: app.extensions.ui,

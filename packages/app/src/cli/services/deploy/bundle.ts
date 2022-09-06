@@ -1,7 +1,7 @@
 import {buildThemeExtensions, buildFunctionExtension, buildUIExtensions} from '../build/extension.js'
 import {AppInterface} from '../../models/app/app.js'
 import {Identifiers} from '../../models/app/identifiers.js'
-import {path, output, file, error} from '@shopify/cli-kit'
+import {path, output, file} from '@shopify/cli-kit'
 import {zip} from '@shopify/cli-kit/node/archiver'
 
 import {Writable} from 'node:stream'
@@ -22,7 +22,7 @@ export async function bundleUIAndBuildFunctionExtensions(options: BundleOptions)
     await output.concurrent([
       {
         prefix: 'theme_extensions',
-        action: async (stdout: Writable, stderr: Writable, signal: error.AbortSignal) => {
+        action: async (stdout: Writable, stderr: Writable, signal: AbortSignal) => {
           await buildThemeExtensions({
             app: options.app,
             extensions: options.app.extensions.theme,
@@ -34,7 +34,7 @@ export async function bundleUIAndBuildFunctionExtensions(options: BundleOptions)
       },
       {
         prefix: 'extensions',
-        action: async (stdout: Writable, stderr: Writable, signal: error.AbortSignal) => {
+        action: async (stdout: Writable, stderr: Writable, signal: AbortSignal) => {
           /**
            * For deployment we want the build process to ouptut the artifacts directly in the directory
            * to prevent artifacts from past builds from leaking into deploy builds.
@@ -56,7 +56,7 @@ export async function bundleUIAndBuildFunctionExtensions(options: BundleOptions)
       ...options.app.extensions.function.map((functionExtension) => {
         return {
           prefix: `function_${functionExtension.localIdentifier}`,
-          action: async (stdout: Writable, stderr: Writable, signal: error.AbortSignal) => {
+          action: async (stdout: Writable, stderr: Writable, signal: AbortSignal) => {
             await buildFunctionExtension(functionExtension, {stdout, stderr, signal, app: options.app})
           },
         }
