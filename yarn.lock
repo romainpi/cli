@@ -969,19 +969,6 @@
   dependencies:
     fast-json-stringify "^5.0.0"
 
-"@fastify/reply-from@^8.0.0":
-  version "8.2.1"
-  resolved "https://registry.yarnpkg.com/@fastify/reply-from/-/reply-from-8.2.1.tgz#590cf82148149ff5963b8b398a5f08259e79af12"
-  integrity sha512-vi0arBWSktvPEFA5cAtujrLYgt12a4HYLYE0CTgnX5YQUiEZXV5am85fHgswJtWgp5Wp/HF4cidHJuTMwLcGxQ==
-  dependencies:
-    "@fastify/error" "^3.0.0"
-    end-of-stream "^1.4.4"
-    fastify-plugin "^4.0.0"
-    pump "^3.0.0"
-    semver "^7.3.7"
-    tiny-lru "^8.0.2"
-    undici "^5.5.1"
-
 "@gar/promisify@^1.0.1":
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.3.tgz#555193ab2e3bb3b6adc3d551c9c030d9e860daf6"
@@ -5177,7 +5164,7 @@ encoding@^0.1.12:
   dependencies:
     iconv-lite "^0.6.2"
 
-end-of-stream@^1.0.0, end-of-stream@^1.1.0, end-of-stream@^1.4.1, end-of-stream@^1.4.4:
+end-of-stream@^1.0.0, end-of-stream@^1.1.0, end-of-stream@^1.4.1:
   version "1.4.4"
   resolved "https://registry.yarnpkg.com/end-of-stream/-/end-of-stream-1.4.4.tgz#5ae64a5f45057baf3626ec14da0ca5e4b2431eb0"
   integrity sha512-+uw1inIHVPQoaVuHzRyXd21icM+cnt4CzD5rW+NC1wjOUSTOs+Te7FOv7AhN7vS9x/oIyhLP5PR1H+phQAHu5Q==
@@ -6133,11 +6120,6 @@ fast-url-parser@1.1.3:
   integrity sha512-5jOCVXADYNuRkKFzNJ0dCCewsZiYo0dz8QNYljkOpFC6r2U4OBmKtvm/Tsuh4w1YYdDqDb31a8TVhBJ2OJKdqQ==
   dependencies:
     punycode "^1.3.2"
-
-fastify-plugin@^4.0.0:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/fastify-plugin/-/fastify-plugin-4.2.1.tgz#4b80020957938dbc44b8ad4a898fd8bcfbab3f65"
-  integrity sha512-dlGKiwLzRBKkEf5J5ho0uAD/Jdv8GQVUbriB3tAX3ehRUXE4gTV3lRd5inEg9li1aLzb0EGj8y2K4/8g1TN06g==
 
 fastify@^4.2.1:
   version "4.5.3"
