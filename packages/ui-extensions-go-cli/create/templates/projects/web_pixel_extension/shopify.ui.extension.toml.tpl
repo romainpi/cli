@@ -1,10 +1,10 @@
 {{ template "shared/shopify.ui.extension.toml" . }}
 runtime_context = "strict"
 
-[configuration]
+[settings]
 type = "object"
 
-[configuration.fields.accountID]
+[settings.fields.accountID]
 name = "Account ID"
 description = "Account ID"
 type = "single_line_text_field"

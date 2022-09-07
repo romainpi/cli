@@ -25,7 +25,7 @@ export function validateWebPixelConfig(extension: UIExtension) {
     throw WebPixelConfigError('runtime_context')
   }
 
-  if (!extension.configuration.configuration) {
-    throw WebPixelConfigError('configuration')
+  if (!extension.configuration.settings) {
+    throw WebPixelConfigError('settings')
   }
 }
