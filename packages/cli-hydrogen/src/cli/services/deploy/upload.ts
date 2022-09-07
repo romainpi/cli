@@ -8,15 +8,17 @@ import {UploadDeploymentQuery} from './graphql/upload_deployment.js'
 import {WebPageNotAvailable} from './error.js'
 import {api, http, file} from '@shopify/cli-kit'
 import {zip} from '@shopify/cli-kit/node/archiver'
+import {ClientError} from 'graphql-request'
+
+export const TooManyRequestsError = () => {
+  return new Error("You've made too many requests. Please try again later.")
+}
+
+export const UnrecoverableError = (message: string) => {
+  return new Error(`Unrecoverable: ${message}`)
+}
 
 export const createDeployment = async (config: ReqDeployConfig): Promise<CreateDeploymentResponse> => {
-  const headers = await api.buildHeaders(config.deploymentToken)
-  const client = await http.graphqlClient({
-    headers,
-    service: 'dms',
-    url: getDmsAddress(config.dmsAddress),
-  })
-
   const variables = {
     input: {
       branch: config.commitRef,
@@ -27,38 +29,73 @@ export const createDeployment = async (config: ReqDeployConfig): Promise<CreateD
     },
   }
 
-  const response: CreateDeploymentQuerySchema = await client.request(CreateDeploymentQuery, variables)
-  return response.createDeployment
+  try {
+    const response: CreateDeploymentQuerySchema = await api.oxygen.request(
+      config.dmsAddress,
+      CreateDeploymentQuery,
+      config.deploymentToken,
+      variables,
+    )
+
+    if (response.createDeployment?.error) {
+      if (response.createDeployment.error.unrecoverable) {
+        throw UnrecoverableError(response.createDeployment.error.debugInfo)
+      }
+
+      throw new Error(`Failed to create deployment. ${response.createDeployment.error.debugInfo}`)
+    }
+
+    return response.createDeployment
+  } catch (error) {
+    if (error instanceof ClientError) {
+      if (error.response.status === 429) {
+        throw TooManyRequestsError()
+      }
+    }
+
+    throw error
+  }
 }
 
 export const uploadDeployment = async (config: ReqDeployConfig, deploymentID: string): Promise<string> => {
-  let headers = await api.buildHeaders(config.deploymentToken)
+  let deploymentData: UploadDeploymentResponse | undefined
 
-  // note: may need validation for invalid deploymentID? oxygenctl does it
-  // note: we may want to remove the zip that we create in in this step
-  const distPath = `${config.path}/dist`
-  const distZipPath = `${distPath}/dist.zip`
-  await zip(distPath, distZipPath)
+  await file.inTemporaryDirectory(async (tmpDir) => {
+    const distPath = `${config.path}/dist`
+    const distZipPath = `${tmpDir}/dist.zip`
+    await zip(distPath, distZipPath)
 
-  const formData = http.formData()
-  formData.append('operations', buildOperationsString(deploymentID))
-  formData.append('map', JSON.stringify({'0': ['variables.file']}))
-  formData.append('0', file.createReadStream(distZipPath), {filename: 'upload_dist'})
+    const formData = http.formData()
+    formData.append('operations', buildOperationsString(deploymentID))
+    formData.append('map', JSON.stringify({'0': ['variables.file']}))
+    formData.append('0', file.createReadStream(distZipPath), {filename: distZipPath})
 
-  delete headers['Content-Type']
-  headers = {
-    ...headers,
-    ...formData.getHeaders(),
-  }
+    const response = await api.oxygen.uploadDeploymentFile(config.dmsAddress, config.deploymentToken, formData)
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw TooManyRequestsError()
+      }
+      if (response.status !== 200 && response.status !== 202) {
+        throw new Error(`Failed to upload deployment. ${await response.json()}`)
+      }
+    }
 
-  const response = await http.shopifyFetch('dms', getDmsAddress(config.dmsAddress), {
-    method: 'POST',
-    body: formData,
-    headers,
+    deploymentData = (await response.json()) as UploadDeploymentResponse
   })
 
-  const responseData = (await response.json()) as UploadDeploymentResponse
-  return responseData.data.uploadDeployment.deployment.previewURL
+  if (!deploymentData) {
+    throw new Error('Failed to upload deployment.')
+  }
+  const deploymentError = deploymentData.data?.uploadDeployment?.error
+  if (deploymentError) {
+    if (deploymentError.unrecoverable) {
+      throw UnrecoverableError(`Unrecoverable: ${deploymentError.debugInfo}`)
+    }
+
+    throw new Error(`Failed to upload deployment: ${deploymentError.debugInfo}`)
+  }
+
+  return deploymentData.data.uploadDeployment.deployment.previewURL
 }
 
 export const healthCheck = async (pingUrl: string) => {
@@ -72,8 +109,4 @@ const buildOperationsString = (deploymentID: string): string => {
     query: UploadDeploymentQuery,
     variables: {deploymentID, file: null},
   })
-}
-
-const getDmsAddress = (dmsHost: string): string => {
-  return `https://${dmsHost}/api/graphql/deploy/v1`
 }

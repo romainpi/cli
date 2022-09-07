@@ -30,12 +30,27 @@ export async function deployToOxygen(_config: DeployConfig) {
     {
       title: '✨ Creating a deployment',
       task: async (ctx, task) => {
+        const retryCount = task.isRetrying()?.count
+        if (retryCount === backoffPolicy.length) {
+          throw new Error(`Could not create deployment on Oxygen. ${task.errors[task.errors.length - 1]?.message}`)
+        }
+        if (retryCount && !isUnitTest) await system.sleep(backoffPolicy[retryCount - 1]!)
+
+        if (retryCount) {
+          if (task.errors.length > 0) {
+            const unrecoverable = task.errors.some((error) => error.message.includes('Unrecoverable'))
+            if (unrecoverable) {
+              return
+            }
+          }
+        }
+
         const {deploymentID, assetBaseURL} = await createDeployment(ctx.config)
         ctx.assetBaseURL = assetBaseURL
         ctx.deploymentID = deploymentID
         task.title = '✨ Deployment created'
       },
-      retry: 2,
+      retry: 3,
     },
     {
       title: '🛠 Building project',
@@ -56,6 +71,21 @@ export async function deployToOxygen(_config: DeployConfig) {
     {
       title: '🚀 Uploading deployment files',
       task: async (ctx, task) => {
+        const retryCount = task.isRetrying()?.count
+        if (retryCount === backoffPolicy.length) {
+          throw new Error(`Uploading files to Oyxgen failed: ${task.errors[task.errors.length - 1]?.message}`)
+        }
+        if (retryCount && !isUnitTest) await system.sleep(backoffPolicy[retryCount - 1]!)
+
+        if (retryCount) {
+          if (task.errors.length > 0) {
+            const unrecoverable = task.errors.some((error) => error.message.includes('Unrecoverable'))
+            if (unrecoverable) {
+              return
+            }
+          }
+        }
+
         ctx.previewURL = await uploadDeployment(ctx.config, ctx.deploymentID)
         task.output = `Preview URL: ${ctx.previewURL}`
         task.title = '🚀 Files uploaded'
@@ -64,7 +94,7 @@ export async function deployToOxygen(_config: DeployConfig) {
         bottomBar: Infinity,
         persistentOutput: true,
       },
-      retry: 2,
+      retry: backoffPolicy.length,
     },
     {
       title: '📡 Checking deployment health',

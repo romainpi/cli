@@ -92,6 +92,54 @@ describe('deployToOxygen()', () => {
     expect(mockedHealthCheck).toHaveBeenCalledTimes(3)
   })
 
+  it('does retry for createDeployment if the error is recoverable', async () => {
+    mockedFillDeployConfig.mockResolvedValue(reqDeployConfig)
+    mockedCreateDeployment
+      .mockRejectedValueOnce(new Error('recoverable'))
+      .mockRejectedValueOnce(new Error('also recoverable'))
+      .mockResolvedValue({deploymentID: 'deploymentID', assetBaseURL: 'assetBaseURL'})
+
+    await deployToOxygen(deployConfig)
+
+    expect(mockedCreateDeployment).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not retry for createDeployment if the error is unrecoverable', async () => {
+    mockedFillDeployConfig.mockResolvedValue(reqDeployConfig)
+    mockedCreateDeployment.mockRejectedValueOnce(new Error('Unrecoverable'))
+
+    await deployToOxygen(deployConfig)
+
+    expect(mockedCreateDeployment).toHaveBeenCalledTimes(1)
+  })
+
+  it('does retry for uploadDeployment if the error is recoverable', async () => {
+    mockedFillDeployConfig.mockResolvedValue(reqDeployConfig)
+    mockedCreateDeployment.mockResolvedValue({deploymentID: 'deploymentID', assetBaseURL: 'assetBaseURL'})
+    mockedBuildTaskList.mockReturnValue([])
+    mockedUploadDeployment
+      .mockRejectedValueOnce(new Error('recoverable'))
+      .mockRejectedValueOnce(new Error('also recoverable'))
+      .mockResolvedValue('previewURL')
+
+    await deployToOxygen(deployConfig)
+
+    expect(mockedCreateDeployment).toHaveBeenCalledTimes(1)
+    expect(mockedUploadDeployment).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not retry for uploadDeployment if the error is unrecoverable', async () => {
+    mockedFillDeployConfig.mockResolvedValue(reqDeployConfig)
+    mockedCreateDeployment.mockResolvedValue({deploymentID: 'deploymentID', assetBaseURL: 'assetBaseURL'})
+    mockedBuildTaskList.mockReturnValue([])
+    mockedUploadDeployment.mockRejectedValue(new Error('Unrecoverable: Should not retry'))
+
+    await deployToOxygen(deployConfig)
+
+    expect(mockedCreateDeployment).toHaveBeenCalledTimes(1)
+    expect(mockedUploadDeployment).toHaveBeenCalledTimes(1)
+  })
+
   describe('when the deploy config has healthCheck set to false', () => {
     it('skips healthCheck', async () => {
       mockedFillDeployConfig.mockResolvedValue({...reqDeployConfig, healthCheck: false})
