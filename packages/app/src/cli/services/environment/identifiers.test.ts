@@ -45,7 +45,7 @@ const EXTENSION_A: UIExtension = {
   type: 'checkout_post_purchase',
   graphQLType: 'CHECKOUT_POST_PURCHASE',
   configuration: {name: '', type: 'checkout_post_purchase', metafields: []},
-  buildDirectory: '',
+  outputBundlePath: '',
   entrySourceFilePath: '',
   devUUID: 'devUUID',
 }
@@ -58,7 +58,7 @@ const EXTENSION_A_2: UIExtension = {
   type: 'checkout_post_purchase',
   graphQLType: 'CHECKOUT_POST_PURCHASE',
   configuration: {name: '', type: 'checkout_post_purchase', metafields: []},
-  buildDirectory: '',
+  outputBundlePath: '',
   entrySourceFilePath: '',
   devUUID: 'devUUID',
 }

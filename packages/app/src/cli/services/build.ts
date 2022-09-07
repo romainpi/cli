@@ -1,8 +1,8 @@
-import {buildThemeExtensions, buildUIExtensions, buildFunctionExtension} from './build/extension.js'
+import {buildThemeExtensions, buildFunctionExtension, buildUIExtension} from './build/extension.js'
 import buildWeb from './web.js'
 import {installAppDependencies} from './dependencies.js'
 import {AppInterface, Web} from '../models/app/app.js'
-import {output} from '@shopify/cli-kit'
+import {output, abort} from '@shopify/cli-kit'
 import {Writable} from 'node:stream'
 
 interface BuildOptions {
@@ -25,14 +25,14 @@ async function build({app, skipDependenciesInstallation, apiKey = undefined}: Bu
     ...app.webs.map((web: Web) => {
       return {
         prefix: web.configuration.type,
-        action: async (stdout: Writable, stderr: Writable, signal: AbortSignal) => {
+        action: async (stdout: Writable, stderr: Writable, signal: abort.Signal) => {
           await buildWeb('build', {web, stdout, stderr, signal, env})
         },
       }
     }),
     {
       prefix: 'theme_extensions',
-      action: async (stdout: Writable, stderr: Writable, signal: AbortSignal) => {
+      action: async (stdout: Writable, stderr: Writable, signal: abort.Signal) => {
         await buildThemeExtensions({
           app,
           extensions: app.extensions.theme,
@@ -42,22 +42,18 @@ async function build({app, skipDependenciesInstallation, apiKey = undefined}: Bu
         })
       },
     },
-    {
-      prefix: 'extensions',
-      action: async (stdout: Writable, stderr: Writable, signal: AbortSignal) => {
-        await buildUIExtensions({
-          app,
-          extensions: app.extensions.ui,
-          stdout,
-          stderr,
-          signal,
-        })
-      },
-    },
+    ...app.extensions.ui.map((uiExtension) => {
+      return {
+        prefix: uiExtension.localIdentifier,
+        action: async (stdout: Writable, stderr: Writable, signal: abort.Signal) => {
+          await buildUIExtension(uiExtension, {stdout, stderr, signal, app})
+        },
+      }
+    }),
     ...app.extensions.function.map((functionExtension) => {
       return {
         prefix: functionExtension.localIdentifier,
-        action: async (stdout: Writable, stderr: Writable, signal: AbortSignal) => {
+        action: async (stdout: Writable, stderr: Writable, signal: abort.Signal) => {
           await buildFunctionExtension(functionExtension, {stdout, stderr, signal, app})
         },
       }
