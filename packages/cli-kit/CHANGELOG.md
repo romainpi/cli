@@ -1,5 +1,11 @@
 # @shopify/cli-kit
 
+## 3.11.0
+
+### Minor Changes
+
+- 922c204e: New Result type for handling errors
+
 ## 3.10.1
 
 ### Patch Changes
