@@ -3,6 +3,7 @@ import {generatePartnersURLs, generateURL, getURLs, shouldOrPromptUpdateURLs, up
 import {installAppDependencies} from './dependencies.js'
 import {devExtensions} from './dev/extension.js'
 import {outputAppURL, outputExtensionsMessages, outputUpdateURLsResult} from './dev/output.js'
+import {themeExtensionArgs} from './dev/theme-extension-args.js'
 import {
   ReverseHTTPProxyTarget,
   runConcurrentHTTPProcessesAndPathForwardTraffic,
@@ -12,6 +13,7 @@ import {UIExtension} from '../models/app/extensions.js'
 import {fetchProductVariant} from '../utilities/extensions/fetch-product-variant.js'
 import {error, analytics, output, port, system, session} from '@shopify/cli-kit'
 import {Config} from '@oclif/core'
+import {execCLI2} from '@shopify/cli-kit/node/ruby'
 import {Writable} from 'node:stream'
 
 export interface DevOptions {
@@ -26,6 +28,8 @@ export interface DevOptions {
   checkoutCartUrl?: string
   tunnelUrl?: string
   noTunnel: boolean
+  theme?: string
+  port?: number
 }
 
 interface DevWebOptions {
@@ -101,8 +105,9 @@ async function dev(options: DevOptions) {
   const proxyTargets: ReverseHTTPProxyTarget[] = []
   const proxyUrl = frontendUrl
   const proxyPort = options.noTunnel === true ? await port.getRandomPort() : frontendPort
+
   if (options.app.extensions.ui.length > 0) {
-    const devExt = await devExtensionsTarget(
+    const devExt = await devUIExtensionsTarget(
       options.app,
       apiKey,
       proxyUrl,
@@ -110,6 +115,11 @@ async function dev(options: DevOptions) {
       options.subscriptionProductUrl,
       options.checkoutCartUrl,
     )
+    proxyTargets.push(devExt)
+  }
+
+  if (options.app.extensions.theme.length > 0) {
+    const devExt = await devThemeExtensionTarget(options, apiKey, storeFqdn, token)
     proxyTargets.push(devExt)
   }
 
@@ -154,6 +164,24 @@ async function dev(options: DevOptions) {
 interface DevFrontendTargetOptions extends DevWebOptions {
   web: Web
   backendPort: number
+}
+
+function devThemeExtensionTarget(
+  options: DevOptions,
+  apiKey: string,
+  store: string,
+  token: string,
+): ReverseHTTPProxyTarget {
+  return {
+    logPrefix: 'extensions',
+    action: async (_stdout: Writable, _stderr: Writable, _signal: error.AbortSignal, _port: number) => {
+      const adminSession = await session.ensureAuthenticatedAdmin(store)
+      const storefrontToken = await session.ensureAuthenticatedStorefront()
+      const args = await themeExtensionArgs(apiKey, options)
+
+      await execCLI2(['extension', 'serve', ...args], {adminSession, storefrontToken, token})
+    },
+  }
 }
 
 function devFrontendTarget(options: DevFrontendTargetOptions): ReverseHTTPProxyTarget {
@@ -223,7 +251,7 @@ function devBackendTarget(web: Web, options: DevWebOptions): output.OutputProces
   }
 }
 
-async function devExtensionsTarget(
+async function devUIExtensionsTarget(
   app: AppInterface,
   apiKey: string,
   url: string,

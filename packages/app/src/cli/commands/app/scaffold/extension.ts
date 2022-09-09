@@ -5,6 +5,7 @@ import {
   getExtensionOutputConfig,
   limitedExtensions,
   isUiExtensionType,
+  isThemeExtensionType,
   isFunctionExtensionType,
   functionExtensionTemplates,
   ExternalExtensionTypes,
@@ -201,7 +202,7 @@ export default class AppScaffoldExtension extends Command {
       )}`.value,
     )
 
-    if (isUiExtensionType(extensionType)) {
+    if (isUiExtensionType(extensionType) || isThemeExtensionType(extensionType)) {
       outputTokens.push(
         output.content`  To preview your project, run ${output.token.packagejsonScript(depndencyManager, 'dev')}`.value,
       )
